@@ -56,6 +56,7 @@ function loadCachedMessages(sessionId: string): Message[] {
 
 export default function ChatPanel({
   userId,
+  userName,
   sessionId,
   onPrdGenerated,
   onShowChoices,
@@ -66,6 +67,7 @@ export default function ChatPanel({
   onFirstUserMessage,
 }: {
   userId: string | null;
+  userName?: string | null;
   sessionId: string;
   onPrdGenerated: (prd: PrdData) => void;
   onShowChoices: (choices: Choices) => void;
@@ -303,10 +305,15 @@ export default function ChatPanel({
         className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4"
       >
         {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full text-zinc-500">
-            <div className="text-center">
-              <p className="text-lg mb-2">Halo braii!</p>
-              <p className="text-sm">Ceritain ide product kamu, nanti gue bantu bikin PRD-nya</p>
+          <div className="flex items-center justify-center h-full px-6 relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-[400px] bg-gradient-to-r from-orange-500/10 to-purple-500/10 blur-[100px] pointer-events-none rounded-full" />
+            <div className="text-center max-w-4xl relative z-10">
+              <h1 className="text-5xl md:text-[64px] font-bold text-white mb-6 tracking-tighter leading-[1.1]">
+                Hai, {userName ?? "Sobat"}. Mau buat<br className="hidden md:block" /> produk apa hari ini?
+              </h1>
+              <p className="text-zinc-400 text-lg md:text-[20px] max-w-2xl mx-auto font-normal leading-relaxed">
+                Ceritakan ide produk yang ingin kamu wujudkan. AI bantu susun<br className="hidden md:block" /> PRD-nya secara lengkap dari nol.
+              </p>
             </div>
           </div>
         )}

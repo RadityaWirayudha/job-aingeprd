@@ -38,6 +38,12 @@ const SESSIONS_KEY = "aingeprd_sessions";
 const ACTIVE_KEY = "aingeprd_active_session";
 const LEGACY_KEY = "aingeprd_session_id";
 const PRDS_KEY = "aingeprd_prds";
+// Timestamp of the last visit stored in localStorage. Used to detect fresh
+// visits: if the last visit was more than 30 min ago (or never), treat as a
+// fresh visit. This replaces the old sessionStorage marker which some browsers
+// (Chrome "Continue where you left off") persist across restarts.
+const LAST_VISIT_KEY = "aingeprd_last_visit";
+const FRESH_VISIT_THRESHOLD_MS = 30 * 60 * 1000;
 const DEFAULT_TITLE = "Chat Baru";
 
 // Load the saved PRD history from localStorage (cache for instant reload).
@@ -124,6 +130,10 @@ export default function ChatPage() {
   useEffect(() => {
     activeIdRef.current = activeId;
   }, [activeId]);
+  // Tracks whether the current load is a genuine fresh visit (browser reopened)
+  // vs. a simple page refresh. The sync effect uses this to avoid overriding
+  // the new empty session with an old server session.
+  const freshVisitRef = useRef(false);
   const [hydrated, setHydrated] = useState(false);
   const [isBlurred, setIsBlurred] = useState(false);
   const [choices, setChoices] = useState<Choices | null>(null);
@@ -144,11 +154,33 @@ export default function ChatPage() {
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- post-hydration localStorage load */
     const loaded = loadSessions();
-    setSessionState(loaded);
+
+    // Fresh visit = first ever, or last visit > 30 min ago (covers browser
+    // close/reopen reliably even when the browser restores sessionStorage across
+    // restarts).
+    let isFresh = false;
+    try {
+      const last = localStorage.getItem(LAST_VISIT_KEY);
+      const now = Date.now();
+      isFresh = !last || now - parseInt(last, 10) > FRESH_VISIT_THRESHOLD_MS;
+      localStorage.setItem(LAST_VISIT_KEY, String(now));
+    } catch {}
+    freshVisitRef.current = isFresh;
+
+    let initial = loaded;
+    if (isFresh) {
+      // Reuse an existing empty chat if there is one, otherwise start a new one,
+      // and prune leftover empty chats so they don't accumulate across reopens.
+      const nonEmpty = loaded.sessions.filter((s) => !isEmptySession(s));
+      const target = loaded.sessions.find(isEmptySession) ?? newSession();
+      initial = { sessions: [target, ...nonEmpty], activeId: target.id };
+    }
+
+    setSessionState(initial);
     const cachedPrds = loadPrds();
     setPrds(cachedPrds);
     // Point to the last PRD of the active chat (index is within that chat).
-    const count = cachedPrds.filter((p) => p.sessionId === loaded.activeId).length;
+    const count = cachedPrds.filter((p) => p.sessionId === initial.activeId).length;
     setPrdIndex(count ? count - 1 : 0);
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -294,9 +326,14 @@ export default function ChatPage() {
             .sort((a, b) => b.createdAt - a.createdAt);
 
           const merged = [...updated, ...newFromServer];
-          const activeId = merged.some((s) => s.id === prev.activeId)
+
+          // On a fresh visit, keep the new empty session active so the
+          // greeting is shown — don't let the sync jump to an old session.
+          const activeId = freshVisitRef.current
             ? prev.activeId
-            : merged[0]?.id ?? prev.activeId;
+            : merged.some((s) => s.id === prev.activeId)
+              ? prev.activeId
+              : merged[0]?.id ?? prev.activeId;
           return { sessions: merged, activeId };
         });
       } catch {}
@@ -475,6 +512,7 @@ export default function ChatPage() {
           <ChatPanel
             key={activeId}
             userId={user?.id ?? null}
+            userName={user?.firstName ?? null}
             sessionId={activeId}
             onPrdGenerated={handleGeneratePrd}
             onShowChoices={handleShowChoices}
