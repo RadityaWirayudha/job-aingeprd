@@ -600,6 +600,9 @@ export default function ChatPage() {
               setPrdIndex(Math.min(sessionPrds.length - 1, safeIndex + 1))
             }
             onSelect={setPrdIndex}
+            sessionId={activeId}
+            userId={user?.id ?? null}
+            userName={user?.firstName ?? null}
           />
         </div>
       </div>
