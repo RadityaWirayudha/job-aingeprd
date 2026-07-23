@@ -27,6 +27,13 @@ interface PrdData {
   sections: { heading: string; content: string }[];
 }
 
+function formatCount(n: number): string {
+  if (n >= 1000) {
+    return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+  }
+  return String(n);
+}
+
 function localStorageKey(sessionId: string) {
   return `chat_${sessionId}`;
 }
@@ -80,6 +87,10 @@ export default function ChatPanel({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState<{ userCount: number; prdCount: number }>({
+    userCount: 0,
+    prdCount: 0,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
@@ -101,6 +112,13 @@ export default function ChatPanel({
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((d) => setStats({ userCount: d.userCount, prdCount: d.prdCount }))
+      .catch(() => {});
+  }, []);
 
   const persistMessages = useCallback(
     async (msgs: Message[]) => {
@@ -317,11 +335,11 @@ export default function ChatPanel({
               <div className="mt-8 flex items-center justify-center gap-6">
                 <div className="flex items-center gap-2 text-zinc-400 text-sm">
                   <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                  <span className="font-semibold text-zinc-200">27.7K</span> User
+                  <span className="font-semibold text-zinc-200">{formatCount(stats.userCount)}</span> User
                 </div>
                 <div className="flex items-center gap-2 text-zinc-400 text-sm">
                   <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  <span className="font-semibold text-zinc-200">13.6K</span> PRD
+                  <span className="font-semibold text-zinc-200">{formatCount(stats.prdCount)}</span> PRD
                 </div>
               </div>
             </div>
