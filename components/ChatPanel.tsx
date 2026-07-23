@@ -326,13 +326,13 @@ export default function ChatPanel({
           <div className="flex items-center justify-center h-full px-6 relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-[400px] bg-gradient-to-r from-orange-500/10 to-purple-500/10 blur-[100px] pointer-events-none rounded-full" />
             <div className="text-center max-w-4xl relative z-10">
-              <h1 className="text-5xl md:text-[64px] font-bold text-white mb-6 tracking-tighter leading-[1.1]">
+              <h1 className="text-2xl md:text-[36px] font-bold text-white mb-3 tracking-tighter leading-[1.15]">
                 Hai, {userName ?? "Sobat"}. Mau buat<br className="hidden md:block" /> produk apa hari ini?
               </h1>
-              <p className="text-zinc-400 text-lg md:text-[20px] max-w-2xl mx-auto font-normal leading-relaxed">
+              <p className="text-zinc-400 text-xs md:text-[14px] max-w-2xl mx-auto font-normal leading-relaxed">
                 Ceritakan ide produk yang ingin kamu wujudkan. AI bantu susun<br className="hidden md:block" /> PRD-nya secara lengkap dari nol.
               </p>
-              <div className="mt-8 flex items-center justify-center gap-6">
+              <div className="mt-5 flex items-center justify-center gap-6">
                 <div className="flex items-center gap-2 text-zinc-400 text-sm">
                   <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                   <span className="font-semibold text-zinc-200">{formatCount(stats.userCount)}</span> User
