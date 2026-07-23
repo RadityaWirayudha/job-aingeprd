@@ -580,9 +580,14 @@ export default function ChatPage() {
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 min-h-0 bg-zinc-950">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
-          <div className="w-3 h-3 rounded-full bg-violet-500" />
-          <span className="text-sm font-medium text-zinc-300">LIVE PRD OUTPUT</span>
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800">
+          <div className="flex items-center gap-2 font-bold text-violet-400 bg-violet-400/10 px-2.5 py-1 rounded-full text-[10px] tracking-widest uppercase shrink-0">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+            </span>
+            LIVE PRD OUTPUT
+          </div>
         </div>
 
         <div className="flex-1 min-h-0">
